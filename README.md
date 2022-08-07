@@ -1,4 +1,4 @@
 # maven-project
 
 * Simple Maven Project
-* Automatic triggers
+* Automatic triggers.
