@@ -2,4 +2,4 @@
 
 * Simple Maven Project.
 * Automatic triggers.
-* Trigger
+* Trigger.
