@@ -1,48 +1,41 @@
 
 pipeline {
-    triggers {
-  pollSCM('* * * * *')
-}
     agent any
-    tools{
-        maven 'M2_HOME'
+    options {
+        skipStagesAfterUnstable()
     }
-    environment {
-    registry = '909131776359.dkr.ecr.us-east-1.amazonaws.com/devop_repository'
-    registryCredential = 'jenkins-ecr'
-    dockerimage = ''
-  }
     stages {
-        stage('Checkout'){
-            steps{
-                git branch: 'main', url: 'https://github.com/Yanrice/helloworld_july-16-22.git'
+         stage('Clone repository') { 
+            steps { 
+                script{
+                checkout scm
+                }
             }
         }
-        stage('Code Build') {
+
+        stage('Build') { 
+            steps { 
+                script{
+                 app = docker.build("underwater")
+                }
+            }
+        }
+        stage('Test'){
             steps {
-                sh 'mvn clean package'
+                 echo 'Empty'
             }
         }
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-        stage('Build Image') {
+        stage('Deploy') {
             steps {
                 script{
-                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
-                } 
-            }
-        }
-        stage('Deploy image') {
-            steps{
-                script{ 
-                    docker.withRegistry("https://"+registry,"ecr:us-east-1:"+registryCredential) {
-                        dockerImage.push()
+                        docker.withRegistry('https://909131776359.dkr.ecr.us-east-1.amazonaws.com/devop_repository
+', 'ecr:us-east-2:devop_repository') {
+                    app.push("${env.BUILD_NUMBER}")
+                    app.push("latest")
                     }
                 }
             }
-        }  
+        }
     }
 }
+The Jenkinsfile consists of different stages. Jenkins will run each of these stages in order, and if the build fails, you'll see which stage failed.
