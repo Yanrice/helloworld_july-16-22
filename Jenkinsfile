@@ -1,41 +1,45 @@
 
 pipeline {
     agent any
-    options {
-        skipStagesAfterUnstable()
+    tools{
+        maven 'M2_HOME'
     }
+    environment {
+    registry = '909131776359.dkr.ecr.us-east-1.amazonaws.com/docker-pipeline'
+    registryCredential = 'jenkins-ecr'
+    dockerimage = ''
+  }
     stages {
-         stage('Clone repository') { 
-            steps { 
-                script{
-                checkout scm
-                }
+        stage('Checkout'){
+            steps{
+                git branch: 'main', url: 'https://github.com/Hermann90/helloworld_jan_22.git'
             }
         }
-
-        stage('Build') { 
-            steps { 
-                script{
-                 app = docker.build("underwater")
-                }
-            }
-        }
-        stage('Test'){
+        stage('Code Build') {
             steps {
-                 echo 'Empty'
+                sh 'mvn clean package'
             }
         }
-        stage('Deploy') {
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Build Image') {
             steps {
                 script{
-                        docker.withRegistry('https://909131776359.dkr.ecr.us-east-1.amazonaws.com/devop_repository
-', 'ecr:us-east-2:devop_repository') {
-                    app.push("${env.BUILD_NUMBER}")
-                    app.push("latest")
+                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                } 
+            }
+        }
+        stage('Deploy image') {
+            steps{
+                script{ 
+                    docker.withRegistry("https://"+registry,"ecr:us-east-1:"+registryCredential) {
+                        dockerImage.push()
                     }
                 }
             }
-        }
+        }  
     }
 }
-The Jenkinsfile consists of different stages. Jenkins will run each of these stages in order, and if the build fails, you'll see which stage failed.
