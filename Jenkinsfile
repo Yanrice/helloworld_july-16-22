@@ -7,7 +7,7 @@ pipeline {
     environment {
     registry = '909131776359.dkr.ecr.us-east-1.amazonaws.com/docker-pipeline'
     registryCredential = 'jenkins-ecr'
-    dockerimage = ''
+    dockerImage = ''
   }
     stages {
         stage('Checkout'){
